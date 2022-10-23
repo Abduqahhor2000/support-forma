@@ -12,6 +12,7 @@ module.exports = {
         "input-succes": "rgba(39, 174, 96, 1)",
         "input-error": "rgba(216, 59, 59, 1)",
         "placeholder": "rgba(0, 30, 80, 0.5)",
+        "resume": "#505470",
       },
       boxShadow: {
         "cardJob": "0px 4px 20px rgba(0, 0, 0, 0.2)",

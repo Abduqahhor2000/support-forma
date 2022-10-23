@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Days+One&family=Inter&family=Roboto:wght@500&display=swap');
-
+@import '~antd/dist/antd.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
