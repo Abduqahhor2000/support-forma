@@ -55,3 +55,8 @@ export const drop_icon = (
     />
   </svg>
 );
+
+export const resume_exit_icon = <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+<rect width="20.7414" height="1.88558" rx="0.942791" transform="matrix(0.707111 0.707103 -0.707111 0.707103 1.33331 0)" fill="#333333"/>
+<rect width="20.7414" height="1.88558" rx="0.942791" transform="matrix(0.707111 -0.707103 0.707111 0.707103 0.000518799 14.6665)" fill="#333333"/>
+</svg>

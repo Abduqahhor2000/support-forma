@@ -1,22 +1,33 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BgMap from "../img/bg_map.png";
 import CareerBanner from "../img/career_banner.png";
-import { true_input, error_input, drop_icon } from "../img/svg";
+import {
+  true_input,
+  error_input,
+  drop_icon,
+  resume_exit_icon,
+} from "../img/svg";
 import ReCAPTCHA from "react-google-recaptcha";
 import { Formik } from "formik";
 import { Select } from "antd";
+import pdf_img from "../img/pdf_img.png"
 import "./style.css";
 const { Option } = Select;
 
 export default function Career() {
-  const [inputTrue, setInputTrue] = useState("");
-  // const [fullName, setFullName] = useState("");
+  const [selectedFile, setSelectedFile] = useState("");
+  // const [inputTrue, setInputTrue] = useState("");
   // const [phone, setPhone] = useState("");
   // const [email, setEmail] = useState("");
   // const [majority, setMajority] = useState("");
   // const [focusOn, setFocusOn] = useState("");
   // const [degree, setDegree] = useState("");
   // const [resume, setResume] = useState("");
+  useEffect(() => {
+    (function selected() {
+      console.log(selectedFile);
+    })();
+  }, [selectedFile]);
 
   function onChange(value) {
     console.log("Captcha value:", value);
@@ -72,7 +83,6 @@ export default function Career() {
                 majority: "",
                 focusOn: "",
                 degree: "",
-                resume: "",
               }}
               validate={(values) => {
                 const errors = {};
@@ -277,12 +287,12 @@ export default function Career() {
                           handleBlur({ target: { name: "majority" } })
                         }
                         value={values.majority}
-                        className={`peer border-input-border border-[1px] text-placeholder appearance-none rounded-[20px] border-solid h-11 w-full focus:border-input-focus duration-150 ${
+                        className={`peer border-[1px] text-placeholder appearance-none rounded-[20px] border-solid h-11 w-full  duration-150 ${
                           values.majority && !errors.majority
                             ? "border-input-succes"
                             : errors.majority && touched.majority
                             ? "border-input-error"
-                            : "border-input-border"
+                            : "border-input-border focus:border-input-focus"
                         }`}
                       >
                         <Option className="text-placeholder" hidden value="">
@@ -306,9 +316,9 @@ export default function Career() {
                       ) : null}
                     </div>
                     <div
-                      className={`relative w-[275px] duration-200 overflow-hidden ${
-                        values.majority ? "h-11 mb-5" : "h-0 mb-0"
-                      } ${errors.focusOn && touched.focusOn ? "mb-3" : ""}`}
+                      className={`relative w-[275px] duration-300 overflow-hidden ${
+                        values.majority ? "mb-5" : "h-0 mb-0"
+                      } `}
                     >
                       <Select
                         onChange={(value) => {
@@ -318,12 +328,12 @@ export default function Career() {
                           handleBlur({ target: { name: "focusOn" } })
                         }
                         value={values.focusOn}
-                        className={`peer border-input-border border-[1px] text-placeholder appearance-none rounded-[20px] border-solid h-full w-full focus:border-input-focus duration-150 ${
+                        className={`peer border-[1px] text-placeholder appearance-none rounded-[20px] border-solid h-11 w-full duration-150 ${
                           values.focusOn && !errors.focusOn
                             ? "border-input-succes"
                             : errors.focusOn && touched.focusOn
                             ? "border-input-error"
-                            : "border-input-border"
+                            : "border-input-border focus:border-input-focus"
                         }`}
                       >
                         <Option className="text-placeholder" hidden value="">
@@ -347,11 +357,9 @@ export default function Career() {
                       ) : null}
                     </div>
                     <div
-                      className={`relative  duration-200 overflow-hidden mb-5 ${
+                      className={`relative duration-300 overflow-hidden mb-5 ${
                         values.majority ? "" : "h-0"
-                      } ${values.focusOn ? "w-[275px]" : "w-0 mb-0"} ${
-                        errors.degree ? "mb-3" : ""
-                      }`}
+                      } ${values.focusOn ? "w-[275px]" : "w-0 mb-0"}`}
                     >
                       <Select
                         onChange={(value) =>
@@ -361,12 +369,12 @@ export default function Career() {
                           handleBlur({ target: { name: "degree" } })
                         }
                         value={values.degree}
-                        className={`peer border-input-border border-[1px] text-placeholder appearance-none rounded-[20px] border-solid h-11 w-full focus:border-input-focus duration-150 ${
+                        className={`peer border-[1px] text-placeholder appearance-none rounded-[20px] border-solid h-11 w-full duration-150 ${
                           values.degree && !errors.degree
                             ? "border-input-succes"
                             : errors.degree && touched.degree
                             ? "border-input-error"
-                            : "border-input-border"
+                            : "border-input-border focus:border-input-focus"
                         }`}
                       >
                         <Option className="text-placeholder" hidden value="">
@@ -390,15 +398,12 @@ export default function Career() {
                       ) : null}
                     </div>
                     <div className="w-full px-4 pt-4 pb-5 border-[1px] border-solid border-input-border rounded-lg">
-                      <div className="text-sm text-resume mb-4">
-                        Download resume
+                      <div className="text-sm text-resume mb-4 flex justify-between">
+                        <span>Download resume</span>
+                        <span>Maximum file size is 5 MB</span>
                       </div>
                       <div
-                        className={`relative w-full h-[122px] border-[1px] border-dashed rounded-lg flex flex-col justify-center items-center ${
-                          errors.resume && touched.resume
-                            ? "border-input-error"
-                            : "border-resume"
-                        } `}
+                        className={`relative w-full h-[122px] border-[1px] border-dashed rounded-lg flex flex-col justify-center items-center border-resume`}
                       >
                         <div>{drop_icon}</div>
                         <div className="text-sm cursor-pointer text-placeholder rounded mt-3 py-1.5 px-2.5 border-[1px] border-solid border-input-border">
@@ -407,12 +412,26 @@ export default function Career() {
                         <input
                           type="file"
                           name="resume"
-                          value={values.resume}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
+                          
+                          onChange={(e) => {
+                            if (e.target.files[0]) {
+                              setSelectedFile(e.target.files[0]);
+                            }
+                          }}
                           required
                           className="absolute file:hidden text-transparent w-full h-full top-0 left-0 rounded-lg cursor-pointer after:hidden before:hidden"
                         />
+                        {selectedFile ? (
+                          <span className="absolute top-0 bottom-0 my-auto left-2 h-[106px] w-[106px] rounded-lg border-[1px] border-solid border-input-border">
+                            <span
+                              onClick={setSelectedFile("")}
+                              className="absolute right-2 top-2 cursor-pointer"
+                            >
+                              {resume_exit_icon}
+                            </span>
+                            <pdf_img
+                          </span>
+                        ) : null}
                       </div>
                     </div>
                   </div>
@@ -420,7 +439,7 @@ export default function Career() {
                     sitekey="6LdDb6MiAAAAAHlciLGMzAUV2S0ZjNwmRGuMhOEE"
                     onChange={onChange}
                   />
-                  {console.log(touched)}
+
                   <button
                     type="submit"
                     disabled={isSubmitting}
