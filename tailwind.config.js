@@ -13,6 +13,13 @@ module.exports = {
         "input-error": "rgba(216, 59, 59, 1)",
         "placeholder": "rgba(0, 30, 80, 0.5)",
         "resume": "#505470",
+        "form-bg": "#FBFBFB",
+        "form-border" : "#E3E3E3",
+        "border-active" : "#29A990",
+        "main-text": "#001E50",
+        blacker: {
+          "04": "rgba(0, 0, 0, 0.4)"
+        }
       },
       boxShadow: {
         "cardJob": "0px 4px 20px rgba(0, 0, 0, 0.2)",

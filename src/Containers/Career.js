@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import BgMap from "../img/bg_map.png";
 import CareerBanner from "../img/career_banner.png";
 import {
@@ -10,28 +10,88 @@ import {
 import ReCAPTCHA from "react-google-recaptcha";
 import { Formik } from "formik";
 import { Select } from "antd";
-import pdf_img from "../img/pdf_img.png"
+import pdf_img from "../img/pdf_img.png";
 import "./style.css";
+import ModalBox from "./ModalBox";
+import { ShortFormModal } from "./modalContent/ShortFormModal";
+import { AnimatePresence } from "framer-motion";
+import { https } from "../axios";
+
 const { Option } = Select;
+const SUPPORTED_FORMATS = ["pdf", "docx"];
 
 export default function Career() {
   const [selectedFile, setSelectedFile] = useState("");
-  // const [inputTrue, setInputTrue] = useState("");
-  // const [phone, setPhone] = useState("");
-  // const [email, setEmail] = useState("");
-  // const [majority, setMajority] = useState("");
-  // const [focusOn, setFocusOn] = useState("");
-  // const [degree, setDegree] = useState("");
-  // const [resume, setResume] = useState("");
-  useEffect(() => {
-    (function selected() {
-      console.log(selectedFile);
-    })();
-  }, [selectedFile]);
+  const [fileName, setFileName] = useState("");
+  const [fileError, setFileError] = useState("");
+  const [modal, setModal] = useState(true);
+  const [majority, setMajority] = useState([]);
+  const [degree, setDegree] = useState([]);
+
+  function selected(file) {
+    const fileFormat = file.name.split(".").pop();
+    if (!SUPPORTED_FORMATS.includes(fileFormat)) {
+      setFileError(
+        "Uploaded file has unsupported format. Please! Send the file in PDF or Docx format."
+      );
+      return;
+    } else if (selectedFile.size > 5242880) {
+      setFileError(
+        "Uploaded file is too big. Please! File size should not exceed 5 MB"
+      );
+      return;
+    }
+
+    let cutedName = file.name;
+    if (file.name.length > 16) {
+      cutedName = file.name.substring(0, 10) + "... ." + fileFormat;
+    }
+    setFileName(cutedName);
+    setSelectedFile(file);
+  }
 
   function onChange(value) {
     console.log("Captcha value:", value);
   }
+
+  function getMajorityAndDegree() {
+    if (majority.length < 1) {
+      https
+        .get("/v1/professions")
+        .then((data) => {
+          setMajority(data.data);
+          console.log("get")
+        })
+        .catch((err) => console.log(err));
+    }
+    // if (degree.length < 1) {
+    //   https
+    //     .get("/v1/degrees")
+    //     .then((data) => {
+    //       setDegree(data.data);
+    //     })
+    //     .catch((err) => console.log(err));
+    // }
+  }
+
+  useEffect(() => {
+    getMajorityAndDegree();
+  }, []);
+
+  useEffect(() => {
+    let bodyTag = document.querySelector("body");
+    if (modal) {
+      bodyTag.classList.add("overflow-y-hidden");
+      bodyTag.classList.add("h-screen");
+      bodyTag.classList.add("p-0");
+      bodyTag.classList.add("m-0");
+    } else {
+      bodyTag.classList.remove("overflow-y-hidden");
+      bodyTag.classList.remove("h-screen");
+      bodyTag.classList.remove("p-0");
+      bodyTag.classList.remove("m-0");
+    }
+  }, [modal]);
 
   return (
     <div>
@@ -67,7 +127,7 @@ export default function Career() {
       <div className="min-h-[600px] max-w-[1200px] mx-auto flex justify-between items-center">
         <div>
           <h2 className="w-[470px] text-[40px] font-bold">
-            Let’s discuss how can we help you
+            We will be happy if you are comformed to our team!
           </h2>
         </div>
         <div className="relative w-[630px] h-32">
@@ -119,10 +179,30 @@ export default function Career() {
                 return errors;
               }}
               onSubmit={(values, { setSubmitting }) => {
-                setTimeout(() => {
-                  alert(JSON.stringify(values, null, 2));
-                  setSubmitting(false);
-                }, 400);
+                console.log("start....", selectedFile);
+
+                const formData = new FormData();
+                formData.append("tag", "resume");
+                formData.append("files", selectedFile);
+
+                https
+                  .post("/v1/medias", formData)
+                  .then((data) =>
+                    https.post("/v1/applicants", {
+                      full_name: values.fullName,
+                      phone: values.phone,
+                      email: values.email,
+                      majority: "Backend",
+                      focus_on: "NodeJS",
+                      degree: 1,
+                      file_resume: data.data.files[0],
+                      source: "web",
+                    })
+                  )
+                  .then((data) => console.log(data, "success................."))
+                  .catch((e) => console.log(e));
+
+                setSubmitting(false);
               }}
             >
               {({
@@ -298,15 +378,15 @@ export default function Career() {
                         <Option className="text-placeholder" hidden value="">
                           Majority
                         </Option>
-                        <Option className="text-placeholder" value="1">
-                          ghfdfgh
-                        </Option>
-                        <Option className="text-placeholder" value="2">
-                          Disabled
-                        </Option>
-                        <Option className="text-placeholder" value="3">
-                          yiminghe
-                        </Option>
+                        {
+                          majority.map(major => {
+                            return(
+                              <Option key={major.id} className="text-placeholder" value={major.id}>
+                                {major.name}
+                              </Option>
+                            )
+                          })
+                        }
                       </Select>
                       {errors.majority && touched.majority ? (
                         <span className="text-input-error flex items-center">
@@ -339,15 +419,16 @@ export default function Career() {
                         <Option className="text-placeholder" hidden value="">
                           Focus on
                         </Option>
-                        <Option className="text-placeholder" value="1">
-                          ghfdfgh
-                        </Option>
-                        <Option className="text-placeholder" value="2">
-                          Disabled
-                        </Option>
-                        <Option className="text-placeholder" value="3">
-                          yiminghe
-                        </Option>
+                        {
+                          majority[values?.majority]?.all?.map((focus, index) => {
+                            return(
+                              <Option key={index} className="text-placeholder" value={focus.name}>
+                                {focus.name}
+                              </Option>
+                            )
+                          })
+                        }
+                       
                       </Select>
                       {errors.focusOn && touched.focusOn ? (
                         <span className="text-input-error flex items-center">
@@ -403,7 +484,9 @@ export default function Career() {
                         <span>Maximum file size is 5 MB</span>
                       </div>
                       <div
-                        className={`relative w-full h-[122px] border-[1px] border-dashed rounded-lg flex flex-col justify-center items-center border-resume`}
+                        className={`relative w-full h-[122px] border-[1px] border-dashed rounded-lg flex flex-col justify-center items-center ${
+                          fileError ? "border-input-error" : "border-resume"
+                        } `}
                       >
                         <div>{drop_icon}</div>
                         <div className="text-sm cursor-pointer text-placeholder rounded mt-3 py-1.5 px-2.5 border-[1px] border-solid border-input-border">
@@ -412,27 +495,42 @@ export default function Career() {
                         <input
                           type="file"
                           name="resume"
-                          
                           onChange={(e) => {
                             if (e.target.files[0]) {
-                              setSelectedFile(e.target.files[0]);
+                              selected(e.target.files[0]);
                             }
                           }}
-                          required
                           className="absolute file:hidden text-transparent w-full h-full top-0 left-0 rounded-lg cursor-pointer after:hidden before:hidden"
                         />
                         {selectedFile ? (
                           <span className="absolute top-0 bottom-0 my-auto left-2 h-[106px] w-[106px] rounded-lg border-[1px] border-solid border-input-border">
                             <span
-                              onClick={setSelectedFile("")}
+                              onClick={() => {
+                                setSelectedFile("");
+                              }}
                               className="absolute right-2 top-2 cursor-pointer"
                             >
                               {resume_exit_icon}
                             </span>
-                            <pdf_img
+                            <img
+                              className="w-11 h-14 absolute inset-x-0 mx-auto top-4"
+                              src={pdf_img}
+                              alt=""
+                            />
+                            <span className="text-[10px] max-w-min whitespace-nowrap absolute bottom-2.5 inset-x-0 mx-auto">
+                              {fileName}
+                            </span>
                           </span>
                         ) : null}
                       </div>
+                      <span
+                        className={`text-xs text-input-error duration-200 flex overflow-hidden items-center ${
+                          fileError ? "" : "h-0"
+                        }`}
+                      >
+                        {error_input}
+                        {fileError}
+                      </span>
                     </div>
                   </div>
                   <ReCAPTCHA
@@ -443,7 +541,7 @@ export default function Career() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-block pt-2 pb-2.5 text-lg text-white px-20 mt-8 bg-gradient-to-l tracking-widest from-gradient-color-1 to-gradient-color-2 rounded-full cursor-pointer hover:bg-gradient-to-r"
+                    className="inline-block pt-2 pb-2.5 text-lg text-white px-20 mt-5 bg-gradient-to-l tracking-widest from-gradient-color-1 to-gradient-color-2 rounded-full cursor-pointer hover:bg-gradient-to-r"
                   >
                     Send request
                   </button>
@@ -453,6 +551,13 @@ export default function Career() {
           </div>
         </div>
       </div>
+      <AnimatePresence>
+        {modal ? (
+          <ModalBox setModal={setModal}>
+            <ShortFormModal />
+          </ModalBox>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }

@@ -16,7 +16,7 @@ function ModalBox(props) {
             exit={{
                opacity: 0
             }}
-            className="fixed h-screen w-screen z-10 top-0 left-0 bg-blacker-02 backdrop-blur-sm" 
+            className="fixed h-screen w-screen z-10 top-0 left-0 bg-blacker-04" 
         >
         </motion.div>
         <motion.div 
