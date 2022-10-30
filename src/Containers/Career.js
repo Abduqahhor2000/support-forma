@@ -24,12 +24,13 @@ export default function Career() {
   const [selectedFile, setSelectedFile] = useState("");
   const [fileName, setFileName] = useState("");
   const [fileError, setFileError] = useState("");
-  const [modal, setModal] = useState(true);
+  const [modal, setModal] = useState(false);
   const [majority, setMajority] = useState([]);
   const [degree, setDegree] = useState([]);
+  const [userID, setUserID] = useState("");
 
   function selected(file) {
-    const fileFormat = file.name.split(".").pop();
+    const fileFormat = file.name.split(".").pop(); 
     if (!SUPPORTED_FORMATS.includes(fileFormat)) {
       setFileError(
         "Uploaded file has unsupported format. Please! Send the file in PDF or Docx format."
@@ -54,29 +55,24 @@ export default function Career() {
     console.log("Captcha value:", value);
   }
 
-  function getMajorityAndDegree() {
+  useEffect(() => {
     if (majority.length < 1) {
       https
         .get("/v1/professions")
         .then((data) => {
           setMajority(data.data);
-          console.log("get")
         })
         .catch((err) => console.log(err));
     }
-    // if (degree.length < 1) {
-    //   https
-    //     .get("/v1/degrees")
-    //     .then((data) => {
-    //       setDegree(data.data);
-    //     })
-    //     .catch((err) => console.log(err));
-    // }
-  }
-
-  useEffect(() => {
-    getMajorityAndDegree();
-  }, []);
+    if (degree.length < 1) {
+      https
+        .get("/v1/degrees")
+        .then((data) => {
+          setDegree(data.data);
+        })
+        .catch((err) => console.log(err));
+    }
+  });
 
   useEffect(() => {
     let bodyTag = document.querySelector("body");
@@ -91,7 +87,7 @@ export default function Career() {
       bodyTag.classList.remove("p-0");
       bodyTag.classList.remove("m-0");
     }
-  }, [modal]);
+  }, [modal]); 
 
   return (
     <div>
@@ -179,30 +175,32 @@ export default function Career() {
                 return errors;
               }}
               onSubmit={(values, { setSubmitting }) => {
-                console.log("start....", selectedFile);
-
                 const formData = new FormData();
                 formData.append("tag", "resume");
                 formData.append("files", selectedFile);
 
                 https
                   .post("/v1/medias", formData)
-                  .then((data) =>
+                  .then((data) => 
                     https.post("/v1/applicants", {
                       full_name: values.fullName,
                       phone: values.phone,
                       email: values.email,
-                      majority: "Backend",
-                      focus_on: "NodeJS",
-                      degree: 1,
+                      majority: values.majority,
+                      focus_on: values.focusOn,
+                      degree: values.degree,
                       file_resume: data.data.files[0],
                       source: "web",
                     })
-                  )
-                  .then((data) => console.log(data, "success................."))
-                  .catch((e) => console.log(e));
+                ) 
+                  .then((data) =>{
+                    console.log(data.data)
+                    setUserID(data.data.applicant[0].id)
+                    setModal(true)
+                  }) 
+                  .catch((e) => console.log(e)); 
 
-                setSubmitting(false);
+                setSubmitting(false); 
               }}
             >
               {({
@@ -213,11 +211,8 @@ export default function Career() {
                 handleBlur,
                 handleSubmit,
                 isSubmitting,
-                /* and other goodies */
               }) => (
                 <form onSubmit={handleSubmit}>
-                  {/* {errors.email && touched.email && errors.email} */}
-
                   <div className="flex flex-wrap justify-between mb-7">
                     <div
                       className={`relative w-[275px] mb-5 ${
@@ -380,8 +375,11 @@ export default function Career() {
                         </Option>
                         {
                           majority.map(major => {
+                            if(major.all.length < 1){
+                              return null;
+                            }
                             return(
-                              <Option key={major.id} className="text-placeholder" value={major.id}>
+                              <Option key={major.id} className="text-placeholder" value={major.name}>
                                 {major.name}
                               </Option>
                             )
@@ -419,13 +417,20 @@ export default function Career() {
                         <Option className="text-placeholder" hidden value="">
                           Focus on
                         </Option>
+                        {/* {console.log(majority[values?.majority])} */}
                         {
-                          majority[values?.majority]?.all?.map((focus, index) => {
-                            return(
-                              <Option key={index} className="text-placeholder" value={focus.name}>
-                                {focus.name}
-                              </Option>
-                            )
+                          majority.map(major => {
+                            if(major.name !== values.majority) {return null}
+                            let arr = [];
+                            major.all.map((focus, index) => {
+                              arr.push(
+                                <Option key={index} className="text-placeholder" value={focus.name}>
+                                  {focus.name}
+                                </Option>
+                              )
+                              return null;
+                            })
+                            return arr;
                           })
                         }
                        
@@ -461,15 +466,15 @@ export default function Career() {
                         <Option className="text-placeholder" hidden value="">
                           Degree
                         </Option>
-                        <Option className="text-placeholder" value="1">
-                          ghfdfgh
-                        </Option>
-                        <Option className="text-placeholder" value="2">
-                          Disabled
-                        </Option>
-                        <Option className="text-placeholder" value="3">
-                          yiminghe
-                        </Option>
+                        {degree.map((deg) => {
+                          return (
+                            <Option key={deg.id} className="text-placeholder" value={deg.id}>
+                              {deg.name}
+                            </Option>
+                          )
+                        })}
+                        
+                      
                       </Select>
                       {errors.degree && touched.degree ? (
                         <span className="text-input-error flex items-center">
@@ -554,7 +559,7 @@ export default function Career() {
       <AnimatePresence>
         {modal ? (
           <ModalBox setModal={setModal}>
-            <ShortFormModal />
+            <ShortFormModal setModal={setModal} userId={userID} />
           </ModalBox>
         ) : null}
       </AnimatePresence>

@@ -10,7 +10,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Career />}></Route>
           <Route path="career" element={<Career />}></Route>
-          <Route path="career/form" element={<CareerForm />}></Route>
+          <Route path="career/:userID" element={<CareerForm />}></Route>
         </Routes>
       </BrowserRouter>
     </div>
