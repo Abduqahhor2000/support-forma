@@ -558,7 +558,7 @@ export default function Career() {
       <AnimatePresence>
         {modal ? (
           <ModalBox setModal={setModal}>
-            <ShortFormModal setModal={setModal} userId={userID} />
+            <ShortFormModal setModal={setModal} userID={userID} />
           </ModalBox>
         ) : null}
       </AnimatePresence>

@@ -29,6 +29,7 @@ export const ShortFormModal = ({setModal, userID}) => {
             setModal(false)
             setTimeout(() => {
               navigate(`/career/${userID}`);
+              window.scrollTo(0, 0);
             }, 1000);
           }}
           className="text-white font-semibold text-lg leading-7 py-2 bg-gradient-to-l from-gradient-color-1 to-gradient-color-2 rounded-full px-24 mb-7 cursor-pointer hover:bg-gradient-to-r"

@@ -319,6 +319,7 @@ export default function CareerForm() {
     }
 
     setIsNext(true);
+    window.scrollTo(0, 0);
   };
   const checkedValues2 = (e) => {
     e.preventDefault();
