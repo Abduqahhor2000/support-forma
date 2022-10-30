@@ -539,10 +539,9 @@ export default function Career() {
                     </div>
                   </div>
                   <ReCAPTCHA
-                    sitekey="6LdDb6MiAAAAAHlciLGMzAUV2S0ZjNwmRGuMhOEE"
+                    sitekey="6LeGnsUiAAAAAP0-Xj59FklDG58v1h7Nz-Ts6Cmz"
                     onChange={onChange}
                   />
-
                   <button
                     type="submit"
                     disabled={isSubmitting}
