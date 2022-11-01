@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import BgMap from "../img/bg_map.png";
 import CareerBanner from "../img/career_banner.png";
+import { MaskedInput } from "antd-mask-input";
 import {
   true_input,
   error_input,
@@ -11,6 +12,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 import { Formik } from "formik";
 import { Select } from "antd";
 import pdf_img from "../img/pdf_img.png";
+import career_form from "../img/career_form.png";
 import "./style.css";
 import ModalBox from "./ModalBox";
 import { ShortFormModal } from "./modalContent/ShortFormModal";
@@ -28,20 +30,26 @@ export default function Career() {
   const [majority, setMajority] = useState([]);
   const [degree, setDegree] = useState([]);
   const [userID, setUserID] = useState("");
+  const [phoneFocus, setPhoneFocus] = useState(false);
+  const [captchaValue, setCaptchaValue] = useState("");
 
   function selected(file) {
-    const fileFormat = file.name.split(".").pop(); 
+    const fileFormat = file.name.split(".").pop();
     if (!SUPPORTED_FORMATS.includes(fileFormat)) {
       setFileError(
         "Uploaded file has unsupported format. Please! Send the file in PDF or Docx format."
       );
+      setSelectedFile("");
       return;
     } else if (selectedFile.size > 5242880) {
       setFileError(
         "Uploaded file is too big. Please! File size should not exceed 5 MB"
       );
+      setSelectedFile("");
       return;
     }
+
+    setFileError("");
 
     let cutedName = file.name;
     if (file.name.length > 16) {
@@ -49,10 +57,6 @@ export default function Career() {
     }
     setFileName(cutedName);
     setSelectedFile(file);
-  }
-
-  function onChange(value) {
-    console.log("Captcha value:", value);
   }
 
   useEffect(() => {
@@ -87,27 +91,27 @@ export default function Career() {
       bodyTag.classList.remove("p-0");
       bodyTag.classList.remove("m-0");
     }
-  }, [modal]); 
+  }, [modal]);
 
   return (
     <div>
-      <div className="min-h-[700px] bg-color-brand relative flex items-center justify-center">
+      <div className="min-h-[700px] px-0 sm:px-10 bg-color-brand relative flex items-center justify-center">
         <div className="absolute h-full w-full max-w-[1442px] inset-0 my-0 mx-auto">
-          <img className="w-full h-full block" src={BgMap} alt=""></img>
+          <img className="w-full h-full object-cover" src={BgMap} alt=""></img>
         </div>
-        <div className="max-w-[1160px] flex flex-wrap justify-between z-10">
-          <div className="max-w-[650px] text-white mt-14 mr-20">
-            <h3 className="font-extrabold tracking-widest text-3xl text-white mb-8">
+        <div className="w-full xsm:max-w-[1160px] flex flex-col lg:flex-row flex-wrap justify-between items-center mb-28 z-10">
+          <div className="w-full xsm:w-[450px] xl:w-[650px] px-5 text-white mt-14 mr-0 lg:mr-10 xl:mr-20">
+            <h3 className="font-extrabold tracking-widest h-full text-center lg:text-left text-3xl text-white mb-8">
               Build Your Career along with Support
             </h3>
-            <p className="text-lg font-medium leading-7	tracking-widest mb-10">
+            <p className="text-lg font-medium leading-7 text-center lg:text-left tracking-widest mb-10">
               Support is a network of talented individuals that collaborate to
               build forward-thinking initiatives. To expand our professional
               teams, we seek individuals with superior interpersonal skills,
               inquiring minds, and a strong desire for self-perfection and
               continuous growth.
             </p>
-            <span className="py-2.5 px-20 bg-gradient-to-l tracking-widest from-gradient-color-1 to-gradient-color-2 rounded-full cursor-pointer hover:bg-gradient-to-r">
+            <span className="py-2.5 px-20 mx-auto max-w-max block lg:inline-block bg-gradient-to-l tracking-widest from-gradient-color-1 to-gradient-color-2 rounded-full cursor-pointer hover:bg-gradient-to-r">
               EXPLORE ROLES
             </span>
           </div>
@@ -120,14 +124,17 @@ export default function Career() {
           </div>
         </div>
       </div>
-      <div className="min-h-[600px] max-w-[1200px] mx-auto flex justify-between items-center">
-        <div>
-          <h2 className="w-[470px] text-[40px] font-bold">
-            We will be happy if you are comformed to our team!
-          </h2>
-        </div>
-        <div className="relative w-[630px] h-32">
-          <div className="absolute w-full shadow-cardJob bg-white -top-[335px] rounded-[10px] duration-200 p-8">
+      <div className="min-h-[600px] max-w-[1200px] px-3 sm:px-5 mx-auto flex justify-between items-center">
+        <div className="relative z-10 max-w-[600px] mds:max-w-[1160px] flex flex-col mds:flex-row justify-between shadow-cardJob bg-white mx-auto -top-[100px] rounded-[10px] duration-200">
+          <div className="py-4 sm:py-8 w-full mds:w-5/12 xl:w-1/2 flex  justify-center items-center">
+            <div className="max-w-[350px]">
+              <img className="w-full" src={career_form} alt=""></img>
+              <h2 className="w-full text-[26px] text-center font-bold">
+                We will be happy if you are comformed to our team!
+              </h2>
+            </div>
+          </div>
+          <div className="w-full mds:w-7/12 xl:w-1/2 p-4 sm:p-8">
             <h3 className="text-3xl text-center tracking-wider font-bold mb-8">
               Our Jobs
             </h3>
@@ -150,7 +157,9 @@ export default function Career() {
 
                 if (!values.phone) {
                   errors.phone = "Required";
-                } else if (values.phone.length < 9) {
+                } else if (values.phone[values.phone.length - 1] === "_") {
+                  errors.phone = "Invalid phone number!";
+                } else if (values.phone.length < 17) {
                   errors.phone = "Invalid phone number!";
                 }
 
@@ -175,16 +184,28 @@ export default function Career() {
                 return errors;
               }}
               onSubmit={(values, { setSubmitting }) => {
+                if (selectedFile === "") {
+                  setFileError("Please, drop your resume");
+                  setSubmitting(false);
+                  return;
+                }
+
+                if (!captchaValue) {
+                  setCaptchaValue(null);
+                  setSubmitting(false);
+                  return;
+                }
+
                 const formData = new FormData();
                 formData.append("tag", "resume");
                 formData.append("files", selectedFile);
 
                 https
                   .post("/v1/medias", formData)
-                  .then((data) => 
+                  .then((data) =>
                     https.post("/v1/applicants", {
                       full_name: values.fullName,
-                      phone: values.phone,
+                      phone: values.phone.split(" ").join(""),
                       email: values.email,
                       majority: values.majority,
                       focus_on: values.focusOn,
@@ -192,15 +213,15 @@ export default function Career() {
                       file_resume: data.data.files[0],
                       source: "web",
                     })
-                ) 
-                  .then((data) =>{
-                    console.log(data.data)
-                    setUserID(data.data.applicant[0].id)
-                    setModal(true)
-                  }) 
-                  .catch((e) => console.log(e)); 
+                  )
+                  .then((data) => {
+                    console.log(data.data);
+                    setUserID(data.data.applicant[0].id);
+                    setModal(true);
+                  })
+                  .catch((e) => console.log(e));
 
-                setSubmitting(false); 
+                setSubmitting(false);
               }}
             >
               {({
@@ -212,10 +233,10 @@ export default function Career() {
                 handleSubmit,
                 isSubmitting,
               }) => (
-                <form onSubmit={handleSubmit}>
+                <form className="mb-0" onSubmit={handleSubmit}>
                   <div className="flex flex-wrap justify-between mb-7">
                     <div
-                      className={`relative w-[275px] mb-5 ${
+                      className={`relative w-full xsm:w-[48%] mb-5 ${
                         errors.fullName && touched.fullName ? "mb-3" : ""
                       }`}
                     >
@@ -260,20 +281,31 @@ export default function Career() {
                       ) : null}
                     </div>
                     <div
-                      className={`relative w-[275px] mb-5 ${
+                      className={`relative w-full xsm:w-[48%] mb-5 ${
                         errors.phone && touched.phone ? "mb-3" : ""
                       }`}
                     >
-                      <input
+                      {console.log(values.phone)}
+                      <MaskedInput
                         type="tel"
                         name="phone"
-                        onChange={handleChange}
-                        onBlur={handleBlur}
+                        allowClear
+                        onChange={(e) => {
+                          handleChange(e);
+                        }}
+                        onFocus={(e) => {
+                          setPhoneFocus(true);
+                        }}
+                        onBlur={(e) => {
+                          handleBlur(e);
+                          setPhoneFocus(false);
+                        }}
                         value={values.phone}
-                        autoComplete="off"
-                        maxLength={20}
                         required
-                        className={`peer  border-[1px] rounded-[20px] border-solid h-11 w-full outline-none focus:border-input-focus duration-150 pl-4 pr-10 ${
+                        size="large"
+                        placeholder="+998"
+                        mask="+998 00 000 00 00"
+                        className={`peer  border-[1px] rounded-[20px] border-solid h-11 w-full outline-none shadow-none focus:border-input-focus duration-150 hover:z-0 pl-4 pr-10 ${
                           values.phone && !errors.phone
                             ? "border-input-succes"
                             : errors.phone && touched.phone
@@ -282,9 +314,11 @@ export default function Career() {
                         }`}
                       />
                       <span
-                        className={`absolute top-3 left-4 peer-focus:-top-2 ${
+                        className={`absolute top-3 left-4 ${
+                          phoneFocus ? "-top-2" : ""
+                        } ${
                           values.phone ? "-top-2" : ""
-                        } bg-white px-0.5 text-sm text-placeholder duration-200 pointer-events-none`}
+                        } bg-white px-0.5 text-sm text-placeholder duration-200 z-50 pointer-events-none`}
                       >
                         Phone number*
                       </span>
@@ -293,7 +327,9 @@ export default function Career() {
                           values.phone && !errors.phone
                             ? "opacity-100"
                             : "opacity-0"
-                        } peer-focus:opacity-0 top-2.5 duration-200 right-3`}
+                        } ${
+                          phoneFocus ? "opacity-0" : ""
+                        } z-50 top-2.5 duration-200 right-3`}
                       >
                         {true_input}
                       </span>
@@ -305,7 +341,7 @@ export default function Career() {
                       ) : null}
                     </div>
                     <div
-                      className={`relative w-[275px] mb-5 ${
+                      className={`relative w-full xsm:w-[48%] mb-5 ${
                         errors.email && touched.email ? "mb-3" : ""
                       }`}
                     >
@@ -350,7 +386,7 @@ export default function Career() {
                       ) : null}
                     </div>
                     <div
-                      className={`relative w-[275px] mb-5 ${
+                      className={`relative w-full xsm:w-[48%] mb-5 ${
                         errors.majority ? "mb-3" : ""
                       }`}
                     >
@@ -373,18 +409,20 @@ export default function Career() {
                         <Option className="text-placeholder" hidden value="">
                           Majority
                         </Option>
-                        {
-                          majority.map(major => {
-                            if(major.all.length < 1){
-                              return null;
-                            }
-                            return(
-                              <Option key={major.id} className="text-placeholder" value={major.name}>
-                                {major.name}
-                              </Option>
-                            )
-                          })
-                        }
+                        {majority.map((major) => {
+                          if (major.all.length < 1) {
+                            return null;
+                          }
+                          return (
+                            <Option
+                              key={major.id}
+                              className="text-placeholder"
+                              value={major.name}
+                            >
+                              {major.name}
+                            </Option>
+                          );
+                        })}
                       </Select>
                       {errors.majority && touched.majority ? (
                         <span className="text-input-error flex items-center">
@@ -394,7 +432,7 @@ export default function Career() {
                       ) : null}
                     </div>
                     <div
-                      className={`relative w-[275px] duration-300 overflow-hidden ${
+                      className={`relative w-full xsm:w-[48%] duration-300 overflow-hidden ${
                         values.majority ? "mb-5" : "h-0 mb-0"
                       } `}
                     >
@@ -417,23 +455,25 @@ export default function Career() {
                         <Option className="text-placeholder" hidden value="">
                           Focus on
                         </Option>
-                        {/* {console.log(majority[values?.majority])} */}
-                        {
-                          majority.map(major => {
-                            if(major.name !== values.majority) {return null}
-                            let arr = [];
-                            major.all.map((focus, index) => {
-                              arr.push(
-                                <Option key={index} className="text-placeholder" value={focus.name}>
-                                  {focus.name}
-                                </Option>
-                              )
-                              return null;
-                            })
-                            return arr;
-                          })
-                        }
-                       
+                        {majority.map((major) => {
+                          if (major.name !== values.majority) {
+                            return null;
+                          }
+                          let arr = [];
+                          major.all.map((focus, index) => {
+                            arr.push(
+                              <Option
+                                key={index}
+                                className="text-placeholder"
+                                value={focus.name}
+                              >
+                                {focus.name}
+                              </Option>
+                            );
+                            return null;
+                          });
+                          return arr;
+                        })}
                       </Select>
                       {errors.focusOn && touched.focusOn ? (
                         <span className="text-input-error flex items-center">
@@ -445,7 +485,7 @@ export default function Career() {
                     <div
                       className={`relative duration-300 overflow-hidden mb-5 ${
                         values.majority ? "" : "h-0"
-                      } ${values.focusOn ? "w-[275px]" : "w-0 mb-0"}`}
+                      } ${values.focusOn ? "w-full xsm:w-[48%]" : "w-0 mb-0"}`}
                     >
                       <Select
                         onChange={(value) =>
@@ -468,13 +508,15 @@ export default function Career() {
                         </Option>
                         {degree.map((deg) => {
                           return (
-                            <Option key={deg.id} className="text-placeholder" value={deg.id}>
+                            <Option
+                              key={deg.id}
+                              className="text-placeholder"
+                              value={deg.id}
+                            >
                               {deg.name}
                             </Option>
-                          )
+                          );
                         })}
-                        
-                      
                       </Select>
                       {errors.degree && touched.degree ? (
                         <span className="text-input-error flex items-center">
@@ -508,7 +550,7 @@ export default function Career() {
                           className="absolute file:hidden text-transparent w-full h-full top-0 left-0 rounded-lg cursor-pointer after:hidden before:hidden"
                         />
                         {selectedFile ? (
-                          <span className="absolute top-0 bottom-0 my-auto left-2 h-[106px] w-[106px] rounded-lg border-[1px] border-solid border-input-border">
+                          <span className="absolute top-0 bottom-0 my-auto bg-white left-2 h-[106px] w-[106px] rounded-lg border-[1px] border-solid border-input-border">
                             <span
                               onClick={() => {
                                 setSelectedFile("");
@@ -540,8 +582,14 @@ export default function Career() {
                   </div>
                   <ReCAPTCHA
                     sitekey="6LfXMMYiAAAAALZ2u4WWOR3jssjBxuvUj8eBa8v5"
-                    onChange={onChange}
+                    onChange={(value) => setCaptchaValue(value)}
                   />
+                  {captchaValue === null ? (
+                    <span className="text-input-error flex items-center">
+                      {error_input}
+                      Please, click the captcha
+                    </span>
+                  ) : null}
                   <button
                     type="submit"
                     disabled={isSubmitting}

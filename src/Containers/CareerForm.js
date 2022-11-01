@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { true_input, plus_icon, error_input } from "../img/svg";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { https } from "../axios";
-import { Select, Input } from "antd";
+import { Select, Input} from "antd";
 import { DatePicker } from "antd";
-import moment from 'moment';
+import moment from "moment";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -37,6 +37,7 @@ const langLevel = [
 ];
 
 export default function CareerForm() {
+  const navigate = useNavigate();
   const params = useParams();
   const [isNext, setIsNext] = useState(false);
   const [langString, setLangString] = useState([]);
@@ -79,8 +80,6 @@ export default function CareerForm() {
     },
   ]);
 
-  // console.log(moment(experiences[0].values.start_date, 'YYYY-MM-DD').format())
-
   useEffect(() => {
     https
       .get("/v1/languages")
@@ -91,51 +90,139 @@ export default function CareerForm() {
   }, []);
 
   const addStudy = () => {
-    setEducations([
-      ...educations,
-      {
-        id: new Date().getMilliseconds(),
-        values: {
-          city: "",
-          faculty: "",
-          department: "",
-          graduation_year: "",
+    let endEdu = educations.pop();
+    if (
+      endEdu.values.city &&
+      endEdu.values.department &&
+      endEdu.values.faculty &&
+      endEdu.values.graduation_year &&
+      !endEdu.errors.city &&
+      !endEdu.errors.department &&
+      !endEdu.errors.faculty &&
+      !endEdu.errors.graduation_year
+    ) {
+      educations.push(endEdu);
+      setEducations([
+        ...educations,
+        {
+          id: new Date().getMilliseconds(),
+          values: {
+            city: "",
+            faculty: "",
+            department: "",
+            graduation_year: "",
+          },
+          touched: {},
+          errors: {},
         },
-        touched: {},
-        errors: {},
-      },
-    ]);
+      ]);
+      return;
+    }
+    endEdu.touched.city = true;
+    endEdu.touched.faculty = true;
+    endEdu.touched.department = true;
+    endEdu.touched.graduation_year = true;
+    if (!endEdu.errors.city && !endEdu.values.city) {
+      endEdu.errors.city = "Required!";
+    }
+    if (!endEdu.errors.faculty && !endEdu.values.faculty) {
+      endEdu.errors.faculty = "Required!";
+    }
+    if (!endEdu.errors.department && !endEdu.values.department) {
+      endEdu.errors.department = "Required!";
+    }
+    if (!endEdu.errors.graduation_year && !endEdu.values.graduation_year) {
+      endEdu.errors.graduation_year = "Required!";
+    }
+
+    setEducations([...educations, endEdu]);
   };
   const addLang = () => {
-    setLanguages([
-      ...languages,
-      {
-        id: new Date().getMilliseconds(),
-        values: {
-          language_id: "",
-          level: "",
+    let endLang = languages.pop();
+    if (
+      endLang.values.language_id &&
+      endLang.values.level &&
+      !endLang.errors.language_id &&
+      !endLang.errors.level
+    ) {
+      languages.push(endLang);
+      setLanguages([
+        ...languages,
+        {
+          id: new Date().getMilliseconds(),
+          values: {
+            language_id: "",
+            level: "",
+          },
+          touched: {},
+          errors: {},
         },
-        touched: {},
-        errors: {},
-      },
-    ]);
+      ]);
+      return;
+    }
+    endLang.touched.language_id = true;
+    endLang.touched.level = true;
+    endLang.errors.language_id = "Required!";
+    endLang.errors.level = "Required!";
+
+    setLanguages([...languages, endLang]);
   };
   const addExp = () => {
-    setExperiences([
-      ...experiences,
-      {
-        id: new Date().getMilliseconds(),
-        values: {
-          company_name: "",
-          position: "",
-          start_date: "",
-          end_date: "",
-          comment: "",
+    let endExp = experiences.pop();
+    if (
+      endExp.values.company_name &&
+      endExp.values.position &&
+      endExp.values.start_date &&
+      endExp.values.end_date &&
+      endExp.values.comment &&
+      !endExp.errors.company_name &&
+      !endExp.errors.position &&
+      !endExp.errors.start_date &&
+      !endExp.errors.end_date &&
+      !endExp.errors.comment
+    ) {
+      experiences.push(endExp);
+      setExperiences([
+        ...experiences,
+        {
+          id: new Date().getMilliseconds(),
+          values: {
+            company_name: "",
+            position: "",
+            start_date: "",
+            end_date: "",
+            comment: "",
+          },
+          touched: {},
+          errors: {},
         },
-        touched: {},
-        errors: {},
-      },
-    ]);
+      ]);
+
+      return;
+    }
+
+    endExp.touched.company_name = true;
+    endExp.touched.position = true;
+    endExp.touched.start_date = true;
+    endExp.touched.end_date = true;
+    endExp.touched.comment = true;
+    if (!endExp.errors.company_name && !endExp.values.company_name) {
+      endExp.errors.company_name = "Required!";
+    }
+    if (!endExp.errors.position && !endExp.values.position) {
+      endExp.errors.position = "Required!";
+    }
+    if (!endExp.errors.start_date && !endExp.values.start_date) {
+      endExp.errors.start_date = "Required!";
+    }
+    if (!endExp.errors.end_date && !endExp.values.end_date) {
+      endExp.errors.end_date = "Required!";
+    }
+    if (!endExp.errors.comment && !endExp.values.comment) {
+      endExp.errors.comment = "Required!";
+    }
+
+    setExperiences([...experiences, endExp]);
   };
 
   const removeStudy = (id) => {
@@ -291,127 +378,198 @@ export default function CareerForm() {
   const checkedValues = (e) => {
     e.preventDefault();
 
-    let finderEdu = educations.filter(
-      (edu) =>
-        edu.errors.city ||
-        edu.errors.department ||
-        edu.errors.faculty ||
-        edu.errors.graduation_year ||
-        false
-    );
-    if (finderEdu.length > 0) {
-      return;
-    }
+    let allEduTouched = educations.map((edu) => {
+      edu.touched.city = true;
+      edu.touched.faculty = true;
+      edu.touched.department = true;
+      edu.touched.graduation_year = true;
+      return edu;
+    });
 
     let allTouched = languages.map((lang) => {
+      if (!lang.touched.language_id && !lang.touched.level) {
+        return lang;
+      }
       lang.touched.language_id = true;
       lang.touched.level = true;
       return lang;
     });
 
+    setEducations(allEduTouched);
     setLanguages(allTouched);
 
-    let finderLang = languages.filter(
-      (lang) => lang.errors.language_id || lang.errors.level || false
-    );
-    if (finderLang.length > 0) {
+    let finderEdu = educations.filter((edu) => {
+      if (
+        !edu.values.city &&
+        !edu.values.department &&
+        !edu.values.faculty &&
+        !edu.values.graduation_year
+      ) {
+        return false;
+      }
+      return (
+        edu.errors.city ||
+        edu.errors.department ||
+        edu.errors.faculty ||
+        edu.errors.graduation_year ||
+        false
+      );
+    });
+
+    let finderLang = languages.filter((lang) => {
+      if (!lang.values.language_id && !lang.values.level) {
+        return false;
+      }
+      return lang.errors.language_id || lang.errors.level || false;
+    });
+
+    if (finderEdu.length > 0) {
+      console.log(finderEdu);
       return;
     }
+    if (finderLang.length > 0) {
+      console.log(finderLang);
+      return;
+    }
+    let eduForFetch = educations
+      .map((edu) => {
+        if (
+          edu.values.city &&
+          edu.values.department &&
+          edu.values.faculty &&
+          edu.values.graduation_year
+        ) {
+          return {
+            city: edu.values.city,
+            faculty: edu.values.faculty,
+            department: edu.values.department,
+            is_present_studying: true,
+            graduation_year: edu.values.graduation_year / 1,
+            applicant_id: params.userID / 1,
+          };
+        }
+        return null;
+      })
+      .filter((value) => (value === null ? false : true));
 
-    setIsNext(true);
-    window.scrollTo(0, 0);
+    let langForFetch = languages
+      .map((lang) => {
+        if (lang.values.language_id && lang.values.level) {
+          return {
+            language_id: lang.values.language_id,
+            level: "beginner",
+            applicant_id: params.userID / 1,
+          };
+        }
+        return null;
+      })
+      .filter((value) => (value === null ? false : true));
+
+    if(eduForFetch.length > 0){
+      https
+      .post("/v1/educations", eduForFetch)
+      .then(() => {
+        console.log("success");
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+    } 
+
+    if(langForFetch.length > 0){
+      https
+      .post("/v1/language-skills", langForFetch)
+      .then(() => {
+        console.log("success");
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+    }
+    setIsNext(true)
+    window.scrollTo(0,0)
   };
   const checkedValues2 = (e) => {
     e.preventDefault();
 
     let allTouched = experiences.map((exp) => {
+      exp.touched.company_name = true;
+      exp.touched.position = true;
       exp.touched.start_date = true;
       exp.touched.end_date = true;
+      exp.touched.comment = true;
       return exp;
     });
 
     setExperiences(allTouched);
 
-    let finderExp = experiences.filter(
-      (exp) =>
+    let finderExp = experiences.filter((exp) => {
+      if (
+        !exp.values.company_name &&
+        !exp.values.position &&
+        !exp.values.start_date &&
+        !exp.values.end_date &&
+        !exp.values.comment
+      ) {
+        return false;
+      }
+      return (
         exp.errors.company_name ||
         exp.errors.position ||
         exp.errors.start_date ||
         exp.errors.end_date ||
         exp.errors.comment ||
         false
-    );
+      );
+    });
     if (finderExp.length > 0) {
       return;
     }
 
-    console.log(experiences);
-    let eduFetch = educations.map((edu) => {
-      console.log("edu", edu.id);
+    let expForFetch = experiences
+      .map((exp) => {
+        if (
+          exp.values.company_name &&
+          exp.values.position &&
+          exp.values.start_date &&
+          exp.values.end_date &&
+          exp.values.comment
+        ) {
+          return {
+            company_name: exp.values.company_name,
+            position: exp.values.position,
+            applicant_id: params.userID / 1,
+            start_date: moment(exp.values.start_date, "YYYY-MM-DD").format(),
+            end_date: moment(exp.values.end_date, "YYYY-MM-DD").format(),
+            is_present_working: false,
+            comment: exp.values.comment,
+          };
+        }
+        return null;
+      })
+      .filter((value) => (value === null ? false : true));
+    if(expForFetch.length > 0){
       https
-        .post("/v1/educations", {
-          city: edu.values.city,
-          faculty: edu.values.faculty,
-          department: edu.values.department,
-          is_present_studying: true,
-          graduation_year: edu.values.graduation_year / 1,
-          applicant_id: params.userID / 1,
-        })
-        .then(() => {
-          console.log("success");
-        })
-        .catch((e) => {
-          console.log(e);
-          // console.log("error");
-        });
-      return null;
-    });
-    let langFetch = languages.map((lang) => {
-      console.log("lang", lang.id);
-      https
-        .post("/v1/language-skills", {
-          language_id: lang.values.language_id,
-          level: "beginner",
-          applicant_id: params.userID / 1,
-        })
-        .then(() => {
-          console.log("success");
-        })
-        .catch((e) => {
-          console.log(e);
-          // console.log("error");
-        });
-      return null;
-    });
-    let expFetch = experiences.map((exp) => {
-      console.log("exp", exp.id);
-      https
-        .post("/v1/work-experiences", {
-          company_name: exp.values.company_name,
-          position: exp.values.position,
-          applicant_id: params.userID / 1,
-          start_date: moment(exp.values.start_date, 'YYYY-MM-DD').format(),
-          end_date: moment(exp.values.end_date, 'YYYY-MM-DD').format(),
-          is_present_working: false,
-          comment: exp.values.comment,
-        })
-        .then(() => {
-          console.log("success");
-        })
-        .catch((e) => {
-          console.log(e);
-          // console.log("error");
-        });
-      return null;
-    });
-    console.log(eduFetch, langFetch, expFetch);
+      .post("/v1/work-experiences", expForFetch)
+      .then(() => {
+        navigate("/");
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+    }else{
+      setTimeout(()=>{
+        navigate("/")
+      }, 2000)
+    }
   };
 
   return (
-    <div className="bg-form-bg">
-      <div className="max-w-[1160px] mx-auto min-h-[500px] pb-16">
+    <div className="bg-form-bg ">
+      <div className="max-w-[1160px] mx-auto min-h-[500px] pb-10 sm:pb-16 relative">
+        <div id="careerStart" className="absolute top-0"></div>
         <div
-          className={`flex relative mb-[70px] text-2xl font-semibold tracking-widest pt-14 pb-5 border-b-[4px] after:content-[""] after:block after:bg-border-active after:h-1 after:w-1/2 after:absolute after:-bottom-1 after:duration-500 ${
+          className={`flex items-center relative mb-10 sm:mb-[70px] text-lg sm:text-2xl font-semibold tracking-widest pt-8 sm:pt-14 pb-3 sm:pb-5 border-b-[4px] after:content-[""] after:block after:bg-border-active after:h-1 after:w-1/2 after:absolute after:-bottom-1 after:duration-500 ${
             isNext ? "after:left-1/2" : "after:left-0"
           } border-solid border-form-border`}
         >
@@ -432,14 +590,14 @@ export default function CareerForm() {
           <div className={`${isNext ? "hidden" : "block"}`}>
             <form onSubmit={checkedValues}>
               <div>
-                <div className="text-2xl text-main-text tracking-wider font-semibold">
+                <div className="text-sm lsm:text-base xsm:text-lg sm:text-2xl text-main-text tracking-wider font-semibold">
                   Education process
                 </div>
                 {educations.map((edu) => {
                   return (
                     <div key={edu.id}>
                       <div className="flex pt-5 justify-between flex-wrap">
-                        <div className={`relative w-5/12 mb-7`}>
+                        <div className={`relative w-full xsm:w-[48%] md:w-5/12 mb-5 sm:mb-7`}>
                           <input
                             type="text"
                             name="city"
@@ -463,7 +621,6 @@ export default function CareerForm() {
                             value={edu.values.city}
                             autoComplete="off"
                             maxLength={30}
-                            required
                             className={`peer border-[1px] rounded-[20px] border-solid h-11 w-full outline-none focus:border-input-focus duration-150 pl-4 pr-10 ${
                               edu.values.city && !edu.errors.city
                                 ? "border-input-succes"
@@ -495,7 +652,7 @@ export default function CareerForm() {
                             </span>
                           ) : null}
                         </div>
-                        <div className={`relative w-5/12 mb-7`}>
+                        <div className={`relative w-full xsm:w-[48%] md:w-5/12 mb-5 sm:mb-7`}>
                           <input
                             type="text"
                             name="faculty"
@@ -519,7 +676,6 @@ export default function CareerForm() {
                             value={edu.values.faculty}
                             autoComplete="off"
                             maxLength={30}
-                            required
                             className={`peer border-[1px] rounded-[20px] border-solid h-11 w-full outline-none focus:border-input-focus duration-150 pl-4 pr-10 ${
                               edu.values.faculty && !edu.errors.faculty
                                 ? "border-input-succes"
@@ -551,7 +707,7 @@ export default function CareerForm() {
                             </span>
                           ) : null}
                         </div>
-                        <div className={`relative w-5/12 mb-7`}>
+                        <div className={`relative w-full xsm:w-[48%] md:w-5/12 mb-5 sm:mb-7`}>
                           <input
                             type="text"
                             name="department"
@@ -575,7 +731,6 @@ export default function CareerForm() {
                             value={edu.values.department}
                             autoComplete="off"
                             maxLength={30}
-                            required
                             className={`peer border-[1px] rounded-[20px] border-solid h-11 w-full outline-none focus:border-input-focus duration-150 pl-4 pr-10 ${
                               edu.values.department && !edu.errors.department
                                 ? "border-input-succes"
@@ -608,11 +763,15 @@ export default function CareerForm() {
                             </span>
                           ) : null}
                         </div>
-                        <div className={`relative w-5/12 mb-7`}>
+                        <div className={`relative w-full xsm:w-[48%] md:w-5/12 mb-5 sm:mb-7`}>
                           <DatePicker
                             picker="year"
-                            onChange={(date, string) =>{
-                              changeStudyValue("graduation_year", string, edu.id)
+                            onChange={(date, string) => {
+                              changeStudyValue(
+                                "graduation_year",
+                                string,
+                                edu.id
+                              );
                             }}
                             onFocus={() =>
                               changeStudyValue(
@@ -659,7 +818,7 @@ export default function CareerForm() {
                 })}
               </div>
               {educations.length < 11 ? (
-                <div className="max-w-[1000px] mx-auto px-3 text-base text-main-text tracking-wider">
+                <div className="max-w-[1000px] mx-auto px-3 text-sm sm:text-base text-main-text tracking-wider">
                   <span
                     onClick={() => addStudy()}
                     className="cursor-pointer flex items-center max-w-max"
@@ -669,8 +828,8 @@ export default function CareerForm() {
                 </div>
               ) : null}
 
-              <div className="max-w-[1000px] px-3 mt-16 mx-auto">
-                <div className="text-2xl tracking-wider text-main-text font-semibold">
+              <div className="max-w-[1000px] mt-10 sm:mt-16 mx-auto">
+                <div className="text-sm lsm:text-base xsm:text-lg sm:text-2xl tracking-wider text-main-text font-semibold">
                   Language skills
                 </div>
                 {languages.map((lang) => {
@@ -678,7 +837,7 @@ export default function CareerForm() {
                     <div key={lang.id}>
                       <div className="flex pt-5 justify-between flex-wrap">
                         <div
-                          className={`relative w-5/12 mb-5 ${
+                          className={`relative w-full xsm:w-[48%] sm:w-5/12 mb-5 ${
                             lang.errors.language_id ? "mb-3" : ""
                           }`}
                         >
@@ -741,7 +900,7 @@ export default function CareerForm() {
                           ) : null}
                         </div>
                         <div
-                          className={`relative w-5/12 mb-5 ${
+                          className={`relative w-full xsm:w-[48%] sm:w-5/12 mb-5 ${
                             lang.errors.level ? "mb-3" : ""
                           }`}
                         >
@@ -788,7 +947,7 @@ export default function CareerForm() {
                         </div>
                       </div>
                       {languages.length > 1 ? (
-                        <div className="max-w-[1000px] mx-auto px-3 relative -top-5 text-base text-input-error tracking-wider flex items-center">
+                        <div className="max-w-[1000px] mx-auto px-3 relative -top-5 text-sm sm:text-base text-input-error tracking-wider flex items-center">
                           <span
                             onClick={() => removeLang(lang.id)}
                             className="cursor-pointer"
@@ -802,7 +961,7 @@ export default function CareerForm() {
                 })}
               </div>
               {languages.length < langString.length ? (
-                <div className="max-w-[1000px] mx-auto px-3 text-base text-main-text tracking-wider ">
+                <div className="max-w-[1000px] mx-auto px-3 text-sm sm:text-base text-main-text tracking-wider ">
                   <span
                     className="flex max-w-max items-center cursor-pointer"
                     onClick={() => addLang()}
@@ -813,23 +972,23 @@ export default function CareerForm() {
               ) : null}
               <button
                 type="submit"
-                className="text-white font-semibold block text-lg mt-16 mx-auto max-w-min leading-7 py-2 bg-gradient-to-l from-gradient-color-1 to-gradient-color-2 rounded-full px-24 mb-7 cursor-pointer hover:bg-gradient-to-r"
+                className="text-white font-semibold block text-lg mt-10 sm:mt-16 mx-auto max-w-min leading-7 py-2 bg-gradient-to-l from-gradient-color-1 to-gradient-color-2 rounded-full px-24 mb-5 sm:mb-7 cursor-pointer hover:bg-gradient-to-r"
               >
-                Next
+              Next
               </button>
             </form>
           </div>
           <div className={`${isNext ? "block" : "hidden"}`}>
             <form onSubmit={checkedValues2}>
               <div>
-                <div className="text-2xl text-main-text tracking-wider font-semibold">
+                <div className="text-sm lsm:text-base xsm:text-lg sm:text-2xl text-main-text tracking-wider font-semibold">
                   Work at place{" "}
                 </div>
                 {experiences.map((exp) => {
                   return (
                     <div key={exp.id}>
                       <div className="flex pt-5 justify-between flex-wrap">
-                        <div className={`relative w-5/12 mb-7`}>
+                        <div className={`relative w-full xsm:w-[48%] sm:w-5/12 mb-7`}>
                           <input
                             type="text"
                             name="company_name"
@@ -853,7 +1012,6 @@ export default function CareerForm() {
                             value={exp.values.company_name}
                             autoComplete="off"
                             maxLength={30}
-                            required
                             className={`peer border-[1px] rounded-[20px] border-solid h-11 w-full outline-none focus:border-input-focus duration-150 pl-4 pr-10 ${
                               exp.values.company_name &&
                               !exp.errors.company_name
@@ -889,7 +1047,7 @@ export default function CareerForm() {
                             </span>
                           ) : null}
                         </div>
-                        <div className={`relative w-5/12 mb-7`}>
+                        <div className={`relative w-full xsm:w-[48%] sm:w-5/12 mb-7`}>
                           <input
                             type="text"
                             name="position"
@@ -913,7 +1071,6 @@ export default function CareerForm() {
                             value={exp.values.position}
                             autoComplete="off"
                             maxLength={30}
-                            required
                             className={`peer border-[1px] rounded-[20px] border-solid h-11 w-full outline-none focus:border-input-focus duration-150 pl-4 pr-10 ${
                               exp.values.position && !exp.errors.position
                                 ? "border-input-succes"
@@ -945,7 +1102,7 @@ export default function CareerForm() {
                             </span>
                           ) : null}
                         </div>
-                        <div className={`relative w-5/12 mb-7`}>
+                        <div className={`relative w-full xsm:w-[48%] sm:w-5/12 mb-7`}>
                           <DatePicker
                             onChange={(date, string) => {
                               changeExpValue("start_date", string, exp.id);
@@ -975,7 +1132,7 @@ export default function CareerForm() {
                             </span>
                           ) : null}
                         </div>
-                        <div className={`relative w-5/12 mb-7`}>
+                        <div className={`relative w-full xsm:w-[48%] sm:w-5/12 mb-7`}>
                           <DatePicker
                             onChange={(date, string) => {
                               changeExpValue("end_date", string, exp.id);
@@ -1004,9 +1161,8 @@ export default function CareerForm() {
                             </span>
                           ) : null}
                         </div>
-                        <div className={`relative w-5/12 mb-7`}>
+                        <div className={`relative w-full xsm:w-[48%] sm:w-5/12 mb-7`}>
                           <TextArea
-                            required
                             rows={5}
                             name="comment"
                             onChange={(e) => {
@@ -1042,7 +1198,7 @@ export default function CareerForm() {
                         </div>
                       </div>
                       {experiences.length > 1 ? (
-                        <div className="max-w-[1000px] mx-auto px-3 relative -top-5 text-base text-input-error tracking-wider flex items-center">
+                        <div className="max-w-[1000px] mx-auto px-3 relative -top-5 text-sm sm:text-base text-input-error tracking-wider flex items-center">
                           <span
                             className="cursor-pointer"
                             onClick={() => removeExp(exp.id)}
@@ -1056,7 +1212,7 @@ export default function CareerForm() {
                 })}
               </div>
               {experiences.length < 11 ? (
-                <div className="max-w-[1000px] mx-auto px-3 text-base text-main-text tracking-wider">
+                <div className="max-w-[1000px] mx-auto px-3 text-sm sm:text-base text-main-text tracking-wider">
                   <span
                     onClick={() => addExp()}
                     className="cursor-pointer flex items-center max-w-max"
@@ -1067,7 +1223,7 @@ export default function CareerForm() {
               ) : null}
               <button
                 type="submit"
-                className="text-white font-semibold block text-lg mt-16 mx-auto max-w-min leading-7 py-2 bg-gradient-to-l from-gradient-color-1 to-gradient-color-2 rounded-full px-24 mb-7 cursor-pointer hover:bg-gradient-to-r"
+                className="text-white font-semibold block text-lg mt-10 sm:mt-16 mx-auto max-w-min leading-7 py-2 bg-gradient-to-l from-gradient-color-1 to-gradient-color-2 rounded-full px-24 mb-5 sm:mb-7 cursor-pointer hover:bg-gradient-to-r"
               >
                 Finish
               </button>
