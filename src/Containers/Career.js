@@ -111,13 +111,13 @@ export default function Career() {
               inquiring minds, and a strong desire for self-perfection and
               continuous growth.
             </p>
-            <span className="py-2.5 px-20 mx-auto max-w-max block lg:inline-block bg-gradient-to-l tracking-widest from-gradient-color-1 to-gradient-color-2 rounded-full cursor-pointer hover:bg-gradient-to-r">
+            <span className="py-2.5 opacity-0 px-20 mx-auto max-w-max block lg:inline-block bg-gradient-to-l tracking-widest from-gradient-color-1 to-gradient-color-2 rounded-full cursor-pointer hover:bg-gradient-to-r">
               EXPLORE ROLES
             </span>
           </div>
-          <div className="w-[430px] h-[385px]">
+          <div className="w-full xsm:w-[430px] h-[385px]">
             <img
-              className="w-full h-full block"
+              className="w-full h-full object-contain block"
               src={CareerBanner}
               alt=""
             ></img>
@@ -127,8 +127,12 @@ export default function Career() {
       <div className="min-h-[600px] max-w-[1200px] px-3 sm:px-5 mx-auto flex justify-between items-center">
         <div className="relative z-10 max-w-[600px] mds:max-w-[1160px] flex flex-col mds:flex-row justify-between shadow-cardJob bg-white mx-auto -top-[100px] rounded-[10px] duration-200">
           <div className="py-4 sm:py-8 w-full mds:w-5/12 xl:w-1/2 flex  justify-center items-center">
-            <div className="max-w-[350px]">
-              <img className="w-full" src={career_form} alt=""></img>
+            <div className="w-full xsm:w-[350px]">
+              <img
+                className="w-full object-contain"
+                src={career_form}
+                alt=""
+              ></img>
               <h2 className="w-full text-[26px] text-center font-bold">
                 We will be happy if you are comformed to our team!
               </h2>
@@ -526,7 +530,7 @@ export default function Career() {
                       ) : null}
                     </div>
                     <div className="w-full px-4 pt-4 pb-5 border-[1px] border-solid border-input-border rounded-lg">
-                      <div className="text-sm text-resume mb-4 flex justify-between">
+                      <div className="text-sm text-resume mb-4 flex flex-col xsm:flex-row justify-between">
                         <span>Download resume</span>
                         <span>Maximum file size is 5 MB</span>
                       </div>
@@ -535,10 +539,15 @@ export default function Career() {
                           fileError ? "border-input-error" : "border-resume"
                         } `}
                       >
-                        <div>{drop_icon}</div>
-                        <div className="text-sm cursor-pointer text-placeholder rounded mt-3 py-1.5 px-2.5 border-[1px] border-solid border-input-border">
-                          Upload resume
-                        </div>
+                        {selectedFile ? null : (
+                          <>
+                            <div>{drop_icon}</div>
+                            <div className="text-sm cursor-pointer text-placeholder rounded mt-3 py-1.5 px-2.5 border-[1px] border-solid border-input-border">
+                              Upload resume
+                            </div>
+                          </>
+                        )}
+
                         <input
                           type="file"
                           name="resume"
@@ -583,6 +592,7 @@ export default function Career() {
                   <ReCAPTCHA
                     sitekey="6LfXMMYiAAAAALZ2u4WWOR3jssjBxuvUj8eBa8v5"
                     onChange={(value) => setCaptchaValue(value)}
+                    className="scale-75 relative -left-[26px] lsm:left-0 w-52 lsm:w-full lsm:scale-100"
                   />
                   {captchaValue === null ? (
                     <span className="text-input-error flex items-center">
@@ -593,7 +603,7 @@ export default function Career() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-block pt-2 pb-2.5 text-lg text-white px-20 mt-5 bg-gradient-to-l tracking-widest from-gradient-color-1 to-gradient-color-2 rounded-full cursor-pointer hover:bg-gradient-to-r"
+                    className="block pt-2 min-w-min pb-2.5 text-sm lsm:text-lg text-white px-10 mx-auto lsm:mx-0 lsm:px-20 mt-5 bg-gradient-to-l tracking-widest from-gradient-color-1 to-gradient-color-2 rounded-full cursor-pointer hover:bg-gradient-to-r"
                   >
                     Send request
                   </button>
