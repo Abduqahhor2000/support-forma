@@ -10,7 +10,7 @@ import {
 } from "../img/svg";
 import ReCAPTCHA from "react-google-recaptcha";
 import { Formik } from "formik";
-import { Select } from "antd";
+import { Select, message } from "antd";
 import pdf_img from "../img/pdf_img.png";
 import career_form from "../img/career_form.png";
 import "./style.css";
@@ -66,7 +66,7 @@ export default function Career() {
         .then((data) => {
           setMajority(data.data);
         })
-        .catch((err) => console.log(err));
+        .catch((e) => {});
     }
     if (degree.length < 1) {
       https
@@ -74,7 +74,7 @@ export default function Career() {
         .then((data) => {
           setDegree(data.data);
         })
-        .catch((err) => console.log(err));
+        .catch((e) => {});
     }
   });
 
@@ -206,26 +206,33 @@ export default function Career() {
 
                 https
                   .post("/v1/medias", formData)
-                  .then((data) =>
-                    https.post("/v1/applicants", {
-                      full_name: values.fullName,
-                      phone: values.phone.split(" ").join(""),
-                      email: values.email,
-                      majority: values.majority,
-                      focus_on: values.focusOn,
-                      degree: values.degree,
-                      file_resume: data.data.files[0],
-                      source: "web",
-                    })
-                  )
                   .then((data) => {
-                    console.log(data.data);
-                    setUserID(data.data.applicant[0].id);
-                    setModal(true);
+                    https
+                      .post("/v1/applicants", {
+                        full_name: values.fullName,
+                        phone: values.phone.split(" ").join(""),
+                        email: values.email,
+                        majority: values.majority,
+                        focus_on: values.focusOn,
+                        degree: values.degree,
+                        file_resume: data.data.files[0],
+                        source: "web",
+                      })
+                      .then((data) => {
+                        setUserID(data.data.applicant[0].id);
+                        setModal(true);
+                        setSubmitting(false);
+                      })
+                      .catch((e) => {
+                        message.error(e.response.data.message, 5);
+                        https.delete(`/v1/medias/${data.data.files[1]}`);
+                        setSubmitting(false);
+                      });
                   })
-                  .catch((e) => console.log(e));
-
-                setSubmitting(false);
+                  .catch((e) => {
+                    message.error(e.response.data.message, 5);
+                    setSubmitting(false);
+                  });
               }}
             >
               {({
@@ -289,7 +296,6 @@ export default function Career() {
                         errors.phone && touched.phone ? "mb-3" : ""
                       }`}
                     >
-                      {console.log(values.phone)}
                       <MaskedInput
                         type="tel"
                         name="phone"

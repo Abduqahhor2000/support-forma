@@ -3,7 +3,7 @@ import { true_input, plus_icon, error_input } from "../img/svg";
 import { useNavigate, useParams } from "react-router-dom";
 import { https } from "../axios";
 import { Select, Input} from "antd";
-import { DatePicker } from "antd";
+import { DatePicker, message } from "antd";
 import moment from "moment";
 
 const { TextArea } = Input;
@@ -86,7 +86,9 @@ export default function CareerForm() {
       .then((data) => {
         setLangString(data.data);
       })
-      .catch((err) => console.log(err));
+      .catch((e) => {
+        message.error(e.response.data.message, 5);
+      });
   }, []);
 
   const addStudy = () => {
@@ -162,9 +164,13 @@ export default function CareerForm() {
     }
     endLang.touched.language_id = true;
     endLang.touched.level = true;
-    endLang.errors.language_id = "Required!";
-    endLang.errors.level = "Required!";
-
+    if (!endLang.errors.language_id && !endLang.values.language_id) {
+      endLang.errors.language_id = "Required!";
+    }
+    if (!endLang.errors.level && !endLang.values.level) {
+      endLang.errors.level = "Required!";
+    }
+    
     setLanguages([...languages, endLang]);
   };
   const addExp = () => {
@@ -424,11 +430,11 @@ export default function CareerForm() {
     });
 
     if (finderEdu.length > 0) {
-      console.log(finderEdu);
+      // console.log(finderEdu);
       return;
     }
     if (finderLang.length > 0) {
-      console.log(finderLang);
+      // console.log(finderLang);
       return;
     }
     let eduForFetch = educations
@@ -469,10 +475,11 @@ export default function CareerForm() {
       https
       .post("/v1/educations", eduForFetch)
       .then(() => {
-        console.log("success");
+        // console.log("success");
       })
       .catch((e) => {
-        console.log(e);
+        message.error(e.response.data.message, 5);
+        // console.log(e);
       });
     } 
 
@@ -480,10 +487,11 @@ export default function CareerForm() {
       https
       .post("/v1/language-skills", langForFetch)
       .then(() => {
-        console.log("success");
+        // console.log("success");
       })
       .catch((e) => {
-        console.log(e);
+        message.error(e.response.data.message, 5);
+        // console.log(e);
       });
     }
     setIsNext(true)
@@ -555,7 +563,7 @@ export default function CareerForm() {
         navigate("/");
       })
       .catch((e) => {
-        console.log(e);
+        message.error(e.response.data.message, 5);
       });
     }else{
       setTimeout(()=>{
