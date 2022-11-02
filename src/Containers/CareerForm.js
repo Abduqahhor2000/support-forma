@@ -574,13 +574,13 @@ export default function CareerForm() {
           } border-solid border-form-border`}
         >
           <span
-            onClick={() => setIsNext(false)}
+            // onClick={() => setIsNext(false)}
             className="w-1/2 text-main-text text-center"
           >
             Education
           </span>
           <span
-            onClick={() => setIsNext(true)}
+            // onClick={() => setIsNext(true)}
             className="w-1/2 text-main-text text-center"
           >
             Working experience
